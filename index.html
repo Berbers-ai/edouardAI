@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Edouard · RAEK</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Cormorant+SC:wght@600&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      min-height: 100vh;
+      background: linear-gradient(160deg, #EDE7DB, #DDD5C8);
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      display: flex; flex-direction: column; align-items: center;
+    }
+    #app { width: 100%; max-width: 680px; min-height: 100vh; display: flex; flex-direction: column; padding: 0 20px; }
+    header { padding: 28px 0 0; display: flex; align-items: center; justify-content: space-between; }
+    .avatar {
+      width: 42px; height: 42px; border-radius: 50%;
+      background: linear-gradient(135deg, #0D1B2A 55%, #B8882A);
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Cormorant SC', serif; font-size: 17px; color: #F7F3EC;
+      box-shadow: 0 3px 12px rgba(13,27,42,0.22); margin-right: 12px;
+    }
+    .name { font-family: 'Cormorant SC', serif; font-size: 19px; color: #0D1B2A; letter-spacing: 0.06em; }
+    .sub { font-size: 12px; color: #8A7A60; letter-spacing: 0.07em; font-style: italic; margin-top: 2px; }
+    .divider { height: 1px; margin: 14px 0 0; background: linear-gradient(90deg, transparent, rgba(184,136,42,0.4), transparent); }
+    #intro { flex: 1; display: flex; flex-direction: column; justify-content: center; padding-bottom: 40px; }
+    .quote { font-size: 25px; line-height: 1.45; color: #0D1B2A; font-style: italic; margin-bottom: 12px; }
+    .tagline { font-size: 15px; color: #7A6E5E; line-height: 1.7; margin-bottom: 32px; }
+    .slabel { font-size: 11px; color: #9A8E7A; letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 9px; }
+    .suggestions { display: flex; flex-direction: column; gap: 8px; }
+    .suggestion {
+      background: rgba(255,255,255,0.5); border: 1px solid rgba(184,136,42,0.22);
+      border-radius: 10px; padding: 11px 15px; text-align: left; cursor: pointer;
+      font-family: 'Cormorant Garamond', serif; font-size: 15px; color: #3A3228;
+      transition: all 0.15s; line-height: 1.4;
+    }
+    .suggestion:hover { background: rgba(184,136,42,0.1); border-color: rgba(184,136,42,0.45); }
+    #chat { flex: 1; overflow-y: auto; padding-top: 24px; padding-bottom: 16px; display: none; }
+    #chat.active { display: block; }
+    #chat::-webkit-scrollbar { width: 4px; }
+    #chat::-webkit-scrollbar-thumb { background: rgba(184,136,42,0.2); border-radius: 2px; }
+    .msg { display: flex; margin-bottom: 18px; animation: up 0.3s ease both; }
+    .msg.user { justify-content: flex-end; }
+    @keyframes up { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+    .av {
+      width: 34px; height: 34px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; flex-shrink: 0; margin-top: 2px;
+    }
+    .av.e { background: linear-gradient(135deg,#0D1B2A 60%,#B8882A); color:#F7F3EC; font-weight:700; margin-right:10px; box-shadow:0 2px 8px rgba(13,27,42,0.18); }
+    .av.u { background:#E8E2D8; color:#888; margin-left:10px; }
+    .bubble { max-width: 74%; padding: 12px 16px; font-size: 16px; line-height: 1.65; white-space: pre-wrap; }
+    .bubble.e { background:#FDFAF5; color:#1A1A18; border-radius:16px 16px 16px 4px; box-shadow:0 2px 10px rgba(0,0,0,0.07); border:1px solid rgba(184,136,42,0.13); }
+    .bubble.u { background:linear-gradient(135deg,#0D1B2A,#1a2d42); color:#F7F3EC; border-radius:16px 16px 4px 16px; box-shadow:0 2px 10px rgba(13,27,42,0.22); }
+    .typing { display:inline-flex; gap:4px; align-items:center; }
+    .dot { width:5px; height:5px; border-radius:50%; background:#B8882A; animation:bounce 1.2s ease-in-out infinite; }
+    .dot:nth-child(2) { animation-delay:.2s; }
+    .dot:nth-child(3) { animation-delay:.4s; }
+    @keyframes bounce { 0%,80%,100%{transform:scale(0.6);opacity:0.4;} 40%{transform:scale(1.1);opacity:1;} }
+    .input-wrap { padding: 14px 0 24px; position: sticky; bottom: 0; background: linear-gradient(0deg,rgba(218,210,198,1) 65%,transparent); }
+    .input-box {
+      display: flex; align-items: flex-end; gap: 9px;
+      background: rgba(255,255,255,0.78); backdrop-filter: blur(10px);
+      border-radius: 14px; border: 1px solid rgba(184,136,42,0.2);
+      padding: 9px 9px 9px 16px; box-shadow: 0 3px 20px rgba(13,27,42,0.08);
+    }
+    textarea {
+      flex: 1; border: none; background: transparent;
+      font-family: 'Cormorant Garamond', serif; font-size: 16px; color: #1A1A18;
+      resize: none; line-height: 1.5; max-height: 110px; padding-top: 1px;
+    }
+    textarea:focus { outline: none; }
+    textarea::placeholder { color: #A8998A; }
+    .send {
+      width: 38px; height: 38px; border-radius: 9px; background: #B8882A;
+      border: none; cursor: pointer; display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; transition: background 0.15s; box-shadow: 0 2px 8px rgba(184,136,42,0.28);
+    }
+    .send:hover:not(:disabled) { background: #9A7020; }
+    .send:disabled { opacity: 0.38; cursor: default; }
+    .footer-note { text-align:center; margin-top:8px; font-size:11px; color:#A09070; letter-spacing:0.05em; font-style:italic; }
+  </style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <div style="display:flex;align-items:center">
+      <div class="avatar">E</div>
+      <div>
+        <div class="name">EDOUARD</div>
+        <div class="sub">Stijladviseur · RAEK</div>
+      </div>
+    </div>
+    <div style="font-size:11px;color:#A09070;font-style:italic;letter-spacing:0.08em">v1.1</div>
+  </header>
+  <div class="divider"></div>
+
+  <div id="intro">
+    <p class="quote">"Je kunt niet stoppen met gekleed te zijn.<br>De vraag is alleen of je weet wat het zegt."</p>
+    <p class="tagline">Stel een vraag over stijl, gelegenheid of garderobe.<br>Geen lijstjes. Geen regels. Een gesprek.</p>
+    <div class="slabel">Waar kan ik je mee helpen?</div>
+    <div class="suggestions">
+      <button class="suggestion">Wat draag ik naar een bruiloft buiten deze zomer?</button>
+      <button class="suggestion">Ik voel me nep in een pak. Wat is er mis?</button>
+      <button class="suggestion">Hoe bouw ik een garderobe op zonder veel geld?</button>
+      <button class="suggestion">Wat zijn de stijlverschillen tussen Amsterdam en Milaan?</button>
+    </div>
+  </div>
+
+  <div id="chat"></div>
+
+  <div class="input-wrap">
+    <div class="input-box">
+      <textarea id="inp" rows="1" placeholder="Stel een vraag over stijl…"></textarea>
+      <button class="send" id="btn" disabled>
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none">
+          <path d="M22 2L11 13" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M22 2L15 22L11 13L2 9L22 2Z" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+    </div>
+    <div class="footer-note">Edouard adviseert — hij schrijft niet voor</div>
+  </div>
+</div>
+
+<script>
+const chat = document.getElementById('chat');
+const intro = document.getElementById('intro');
+const inp = document.getElementById('inp');
+const btn = document.getElementById('btn');
+let history = [], busy = false;
+
+document.querySelectorAll('.suggestion').forEach(b => b.onclick = () => send(b.textContent));
+inp.oninput = () => { btn.disabled = !inp.value.trim() || busy; inp.style.height='auto'; inp.style.height=Math.min(inp.scrollHeight,110)+'px'; };
+inp.onkeydown = e => { if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); if(!btn.disabled) send(); } };
+btn.onclick = () => send();
+
+function addMsg(role, content) {
+  const wrap = document.createElement('div');
+  wrap.className = 'msg ' + (role==='user'?'user':'');
+  if(role==='assistant') { const a=document.createElement('div'); a.className='av e'; a.textContent='E'; wrap.appendChild(a); }
+  const b = document.createElement('div');
+  b.className = 'bubble ' + (role==='user'?'u':'e');
+  if(content==='...') b.innerHTML='<span class="typing"><span class="dot"></span><span class="dot"></span><span class="dot"></span></span>';
+  else b.textContent = content;
+  wrap.appendChild(b);
+  if(role==='user') { const a=document.createElement('div'); a.className='av u'; a.textContent='→'; wrap.appendChild(a); }
+  chat.appendChild(wrap);
+  chat.scrollTop = chat.scrollHeight;
+  return b;
+}
+
+async function send(text) {
+  const txt = (text||inp.value).trim();
+  if(!txt||busy) return;
+  intro.style.display='none'; chat.classList.add('active');
+  inp.value=''; inp.style.height='auto'; btn.disabled=true; busy=true;
+  history.push({role:'user',content:txt});
+  addMsg('user', txt);
+  const tb = addMsg('assistant','...');
+  try {
+    const r = await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:history})});
+    const d = await r.json();
+    const reply = d.reply || 'Er ging iets mis. Probeer opnieuw.';
+    tb.textContent = reply;
+    history.push({role:'assistant',content:reply});
+  } catch(e) {
+    tb.textContent = 'Er ging iets mis. Probeer opnieuw.';
+    history.pop();
+  }
+  busy=false; btn.disabled=!inp.value.trim(); inp.focus(); chat.scrollTop=chat.scrollHeight;
+}
+</script>
+</body>
+</html>

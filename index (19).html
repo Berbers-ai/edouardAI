@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <title>Edouard debug</title>
+</head>
+<body>
+  <h2>Edouard debug</h2>
+  <textarea id="q" rows="3" style="width:400px">Wat draag ik naar een bruiloft?</textarea><br><br>
+  <button onclick="ask()">Vraag stellen</button>
+  <pre id="out" style="margin-top:20px;white-space:pre-wrap;max-width:600px"></pre>
+
+<script>
+async function ask() {
+  var text = document.getElementById('q').value;
+  document.getElementById('out').textContent = 'Bezig...';
+  try {
+    var r = await fetch('/api/chat', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ messages: [{ role: 'user', content: text }] })
+    });
+    var raw = await r.text();
+    document.getElementById('out').textContent = 'Status: ' + r.status + '\n\n' + raw;
+  } catch(e) {
+    document.getElementById('out').textContent = 'Fout: ' + e.message;
+  }
+}
+</script>
+</body>
+</html>
